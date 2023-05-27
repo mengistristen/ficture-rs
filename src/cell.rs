@@ -31,41 +31,49 @@ impl GetColor for Cell {
         let (elevation, moisture) = (self.elevation, self.moisture);
         let mut value = normalize(elevation, 0.0, 0.1);
 
-        if elevation < 0.1 { return ocean(value); }
-        if elevation < 0.12 { return color_to_rgb("#01c7dd").expect("color to parse"); }
+        match (elevation, moisture) {
+            (e, _) if e < 0.1 => ocean(value),
+            (e, _) if e < 0.12 => color_to_rgb("#01c7dd").expect("color to parse"),
+            (e, m) if e < 0.3 => {
+                value = normalize(e, 0.12, 0.3);
 
-        if elevation < 0.3 {
-            value = normalize(elevation, 0.12, 0.3);
+                match m {
+                    m if m < 0.16 => subtropical_desert(value),
+                    m if m < 0.33 => grassland(value),
+                    m if m < 0.83 => tropical_seasonal_forest(value),
+                    _ => tropical_rain_forest(value)
+                }
+            },
+            (e, m) if e < 0.6 => {
+                value = normalize(e, 0.3, 0.6);
 
-            if moisture < 0.16 { return subtropical_desert(value); }
-            if moisture < 0.33 { return grassland(value); }
-            if moisture < 0.83 { return tropical_seasonal_forest(value); }
-            return tropical_rain_forest(value);
+                match m {
+                    m if m < 0.16 => temperate_desert(value),
+                    m if m < 0.5 => grassland(value),
+                    m if m < 0.83 => temperate_deciduous_forest(value),
+                    _ => temperate_rain_forest(value)
+                }
+            },
+            (e, m) if e < 0.8 => {
+                value = normalize(e, 0.6, 0.8);
+
+                match m {
+                    m if m < 0.33 => temperate_desert(value),
+                    m if m < 0.66 => shrubland(value),
+                    _ => taiga(value)
+                }
+            }
+            (e, m) => {
+                value = normalize(e, 0.8, 1.0);
+
+                match m {
+                    m if m < 0.1 => scorched(value),
+                    m if m < 0.2 => bare(value),
+                    m if m < 0.5 => tundra(value),
+                    _ => snow(value)
+                }
+            }
         }
-
-        if elevation < 0.6 {
-            value = normalize(elevation, 0.3, 0.6);
-
-            if moisture < 0.16 { return temperate_desert(value); }
-            if moisture < 0.5 { return grassland(value); }
-            if moisture < 0.83 { return temperate_deciduous_forest(value); }
-            return temperate_rain_forest(value);
-        }
-
-        if elevation < 0.8 {
-            value = normalize(elevation, 0.6, 0.8);
-
-            if moisture < 0.33 { return temperate_desert(value); }
-            if moisture < 0.66 { return shrubland(value); }
-            return taiga(value);
-        }
-
-        value = normalize(elevation, 0.8, 1.0);
-
-        if moisture < 0.1 { return scorched(value); }
-        if moisture < 0.2 { return bare(value); }
-        if moisture < 0.5 { return tundra(value); }
-        return snow(value);
     }
 }
 
