@@ -9,7 +9,7 @@
 //! ```
 //! use ficture_generator::cell::Cell;
 //! use ficture_generator::map::{Map, MapMonad};
-//! use ficture_generator::noise::{SimpleNoiseGenerator, SimplexNoiseGeneratorBuilder};
+//! use ficture_generator::noise::{NoiseGeneratorBuilder, SimpleNoiseGenerator, SimplexNoiseGeneratorBuilder};
 //!
 //! let noise_generator = SimplexNoiseGeneratorBuilder::new(10, 10)
 //!     .octaves(6)
@@ -72,7 +72,7 @@ impl SimplexNoiseGenerator {
                 let angle = scale_x * 2.0 * std::f64::consts::PI;
                 (angle.cos() / aspect_ratio, angle.sin() / aspect_ratio)
             })
-            .collect();
+        .collect();
 
         Self {
             height,
@@ -111,6 +111,14 @@ impl SimpleNoiseGenerator for SimplexNoiseGenerator {
     }
 }
 
+pub trait NoiseGeneratorBuilder {
+    fn new(width: usize, height: usize) -> Self;
+    fn octaves(self, octaves: usize) -> Self;
+    fn persistence(self, persistence: f64) -> Self;
+    fn lacunarity(self, lacunarity: f64) -> Self;
+    fn build(self) -> Box<dyn SimpleNoiseGenerator + Send + Sync>;
+}
+
 /// A builder for the [`SimplexNoiseGenerator`].
 pub struct SimplexNoiseGeneratorBuilder {
     width: usize,
@@ -120,9 +128,9 @@ pub struct SimplexNoiseGeneratorBuilder {
     lacunarity: f64,
 }
 
-impl SimplexNoiseGeneratorBuilder {
+impl NoiseGeneratorBuilder for SimplexNoiseGeneratorBuilder {
     /// Creates the [`SimplexNoiseGeneratorBuilder`].
-    pub fn new(width: usize, height: usize) -> Self {
+    fn new(width: usize, height: usize) -> Self {
         Self {
             width,
             height,
@@ -134,7 +142,7 @@ impl SimplexNoiseGeneratorBuilder {
 
     /// Set the number of octaves to be used in heightmap
     /// generation.
-    pub fn octaves(mut self, octaves: usize) -> Self {
+    fn octaves(mut self, octaves: usize) -> Self {
         self.octaves = octaves;
         self
     }
@@ -143,7 +151,7 @@ impl SimplexNoiseGeneratorBuilder {
     /// higher octaves are generated. A higher value means that
     /// higher octaves will have less of an effect on the overall
     /// amplitude than lower octaves.
-    pub fn persistence(mut self, persistence: f64) -> Self {
+    fn persistence(mut self, persistence: f64) -> Self {
         self.persistence = persistence;
         self
     }
@@ -151,20 +159,22 @@ impl SimplexNoiseGeneratorBuilder {
     /// Sets the amount of detail that is added or removed
     /// at each octave. A higher value means that higher octaves
     /// will provide more detail than lower octaves.
-    pub fn lacunarity(mut self, lacunarity: f64) -> Self {
+    fn lacunarity(mut self, lacunarity: f64) -> Self {
         self.lacunarity = lacunarity;
         self
     }
 
     /// Construct the [`SimplexNoiseGenerator`] based on
     /// the defined attributes.
-    pub fn build(self) -> SimplexNoiseGenerator {
-        SimplexNoiseGenerator::new(
-            self.width,
-            self.height,
-            self.octaves,
-            self.persistence,
-            self.lacunarity,
+    fn build(self) -> Box<dyn SimpleNoiseGenerator + Send + Sync> {
+        Box::new(
+            SimplexNoiseGenerator::new(
+                self.width,
+                self.height,
+                self.octaves,
+                self.persistence,
+                self.lacunarity,
+            )
         )
     }
 }
