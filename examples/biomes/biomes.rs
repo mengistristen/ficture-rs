@@ -1,10 +1,10 @@
 //! This example allows you to see the different colors
 //! used in the map generation by creating an image with
 //! elevation on the x axis and moisture on the y axis.
-use ficture_generator::map::{Map, MapMonad};
-use ficture_generator::cell::Cell;
-use ficture_generator::image::pixel_map_to_image;
-use ficture_generator::config::Config;
+use ficture::map::{Map, MapMonad};
+use ficture::cell::Cell;
+use ficture::image::pixel_map_to_image;
+use ficture::config::Config;
 
 fn main() {
     let (width, height) = (1000, 1000);

@@ -1,7 +1,8 @@
 //! This module provides a structure for loading information from config files.
+use std::{fs::File, collections::HashMap};
+
 use colorgrad::Color;
 use serde::{Serialize, Deserialize};
-use std::{fs::File, collections::HashMap};
 use thiserror::Error;
 
 use crate::{noise::{SimpleNoiseGenerator, NoiseGeneratorBuilder}, color::{ColorEvaluator, ColorFunc, get_color_func}};
