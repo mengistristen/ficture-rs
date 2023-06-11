@@ -13,4 +13,8 @@ pub struct Args {
     /// The height of generated maps.
     #[arg(long, default_value_t = 1080)]
     pub height: usize,
+
+    /// The path to the config file to use.
+    #[arg(long, short, default_value_t = String::from("config/config.yaml"))]
+    pub filepath: String
 }

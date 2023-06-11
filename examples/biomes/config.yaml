@@ -1,0 +1,53 @@
+biomes:
+  ocean:
+    gradient: ["#0a46ad", "#35d6f2"]
+noise_generators:
+  elevation_noise:
+    octaves: 6 
+    persistence: 2.0 
+    lacunarity: 3.0
+  moisture_noise:
+    octaves: 10 
+    persistence: 2.0
+    lacunarity: 6.0
+biome_maps:
+  default:
+    elevation_levels:
+      - elevation: 0.2
+        moisture_levels:
+          - moisture: 0.1
+            gradient: ["#827356", "#a6926c"]
+          - moisture: 0.23
+            gradient: ["#81a150", "#99bf5e"]
+          - moisture: 0.5
+            gradient: ["#5e8751", "#73a663"]
+          - moisture: 0.17
+            gradient: ["#2c694a", "#348059"]
+      - elevation: 0.25
+        moisture_levels:
+          - moisture: 0.16
+            gradient: ["#bcc491", "#d4dea2"]
+          - moisture: 0.34
+            gradient: ["#81a150", "#99bf5e"]
+          - moisture: 0.33
+            gradient: ["#5e8751", "#73a663"]
+          - moisture: 0.17
+            gradient: ["#3b784b", "#47915b"]
+      - elevation: 0.25
+        moisture_levels: 
+          - moisture: 0.33
+            gradient: ["#bcc491", "#d4dea2"]
+          - moisture: 0.33
+            gradient: ["#7d8c6d", "#9aad86"]
+          - moisture: 0.34
+            gradient: ["#8a996b", "#a1b37d"]
+      - elevation: 0.2
+        moisture_levels:
+          - moisture: 0.1
+            gradient: ["#3b3b3b", "#6e6e6e"]
+          - moisture: 0.1
+            gradient: ["#7a7a7a", "#a8a8a8"]
+          - moisture: 0.3
+            gradient: ["#adad9c", "#d1cfba"]
+          - moisture: 0.5
+            gradient: ["#ceced6", "#e6e6f0"]

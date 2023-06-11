@@ -1,22 +1,29 @@
-use ficture_generator::args::{Args, Parser};
 use ficture_generator::cell::Cell;
-use ficture_generator::color::GetColor;
+use ficture_generator::config::Config;
 use ficture_generator::image::pixel_map_to_image;
 use ficture_generator::map::{Map, MapMonad};
-use ficture_generator::noise::{SimpleNoiseGenerator, SimplexNoiseGeneratorBuilder};
+use ficture_generator::noise::SimplexNoiseGeneratorBuilder;
+use ficture_generator::utils::normalize;
+
+mod args;
+
+use args::{Args, Parser};
 
 fn main() {
     let args = Args::parse();
-    let elevation_noise_generator = SimplexNoiseGeneratorBuilder::new(args.width, args.height)
-        .octaves(6)
-        .persistence(2.0)
-        .lacunarity(3.0)
-        .build();
-    let moisture_noise_generator = SimplexNoiseGeneratorBuilder::new(args.width, args.height)
-        .octaves(10)
-        .persistence(3.0)
-        .lacunarity(7.0)
-        .build();
+    let config = Config::from_file(args.filepath).expect("config filename to be provided");
+
+    let elevation_noise_generator = config
+        .get_noise_generator::<SimplexNoiseGeneratorBuilder>("elevation_noise", args.width, args.height)
+        .expect("elevation noise to be defined");
+    let moisture_noise_generator = config
+        .get_noise_generator::<SimplexNoiseGeneratorBuilder>("moisture_noise", args.width, args.height)
+        .expect("moisture noise to be defined");
+    let evaluator = config
+        .get_color_evaluator("default")
+        .expect("default biomes to be define");
+    let ocean = config.get_color_func("ocean").expect("ocean to be defined");
+    let sea_level = 0.05;
 
     let map: Map<Cell> = Map::return_single(
         Cell {
@@ -48,8 +55,8 @@ fn main() {
 
     // normalize elevation and moisture
     let map = map.and_then(|cell| {
-        let elevation = (cell.elevation - min_elevation) / (max_elevation - min_elevation);
-        let moisture = (cell.moisture - min_moisture) / (max_moisture - min_moisture);
+        let elevation = normalize(cell.elevation, min_elevation, max_elevation);
+        let moisture = normalize(cell.moisture, min_moisture, max_moisture);
 
         Cell {
             elevation,
@@ -57,7 +64,17 @@ fn main() {
         }
     });
 
-    let map = map.and_then(|cell| cell.get_color());
+    let map = map.and_then(|cell| {
+        let (elevation, moisture) = (cell.elevation, cell.moisture);
+
+        if elevation < sea_level {
+            let normalized_elevation = normalize(elevation, 0.0, sea_level);
+
+            ocean.lock().expect("to acquire the lock")(normalized_elevation)
+        } else {
+            evaluator.evaluate(elevation, moisture)
+        }
+    });
     let image = map.extract(pixel_map_to_image);
 
     image.save("image.png").expect("image to save");

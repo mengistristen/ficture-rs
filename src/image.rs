@@ -7,13 +7,14 @@
 //! # Examples
 //!
 //! ```
+//! use image::Rgb;
+//!
 //! use ficture_generator::cell::Cell;
-//! use ficture_generator::color::GetColor;
 //! use ficture_generator::image::pixel_map_to_image;
 //! use ficture_generator::map::{MapMonad, Map};
 //!
 //! let map = Map::return_single(Cell { elevation: 0.0, moisture: 0.0 }, 10, 10);
-//! let map = map.and_then(|cell| cell.get_color());
+//! let map = map.and_then(|cell| Rgb([0, 0, 0]));
 //! let image = map.extract(pixel_map_to_image);
 //! ```
 use image::{Rgb, RgbImage};
@@ -36,14 +37,14 @@ pub fn pixel_map_to_image(pixels: Vec<Rgb<u8>>, width: usize, height: usize) -> 
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{map::{Map, MapMonad}, cell::Cell, color::GetColor};
+    use crate::{map::{Map, MapMonad}, cell::Cell};
 
     #[test]
     fn test_image_matches_map_dimensions() {
         let width = 1920;
         let height = 1080;
         let map = Map::return_single(Cell { elevation: 0.0, moisture: 0.0 }, width, height);
-        let map = map.and_then(|cell| cell.get_color());
+        let map = map.and_then(|_| Rgb([0, 0, 0]));
         let image = map.extract(pixel_map_to_image);
 
         assert_eq!(image.width(), width as u32);
