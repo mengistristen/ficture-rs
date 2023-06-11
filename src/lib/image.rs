@@ -9,9 +9,9 @@
 //! ```
 //! use image::Rgb;
 //!
-//! use ficture_generator::cell::Cell;
-//! use ficture_generator::image::pixel_map_to_image;
-//! use ficture_generator::map::{MapMonad, Map};
+//! use ficture::cell::Cell;
+//! use ficture::image::pixel_map_to_image;
+//! use ficture::map::{MapMonad, Map};
 //!
 //! let map = Map::return_single(Cell { elevation: 0.0, moisture: 0.0 }, 10, 10);
 //! let map = map.and_then(|cell| Rgb([0, 0, 0]));

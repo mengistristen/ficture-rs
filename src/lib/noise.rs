@@ -7,9 +7,9 @@
 //! # Examples
 //!
 //! ```
-//! use ficture_generator::cell::Cell;
-//! use ficture_generator::map::{Map, MapMonad};
-//! use ficture_generator::noise::{NoiseGeneratorBuilder, SimpleNoiseGenerator, SimplexNoiseGeneratorBuilder};
+//! use ficture::cell::Cell;
+//! use ficture::map::{Map, MapMonad};
+//! use ficture::noise::{NoiseGeneratorBuilder, SimpleNoiseGenerator, SimplexNoiseGeneratorBuilder};
 //!
 //! let noise_generator = SimplexNoiseGeneratorBuilder::new(10, 10)
 //!     .octaves(6)

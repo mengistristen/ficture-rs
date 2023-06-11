@@ -1,9 +1,9 @@
-use ficture_generator::cell::Cell;
-use ficture_generator::config::Config;
-use ficture_generator::image::pixel_map_to_image;
-use ficture_generator::map::{Map, MapMonad};
-use ficture_generator::noise::SimplexNoiseGeneratorBuilder;
-use ficture_generator::utils::normalize;
+use ficture::cell::Cell;
+use ficture::config::Config;
+use ficture::image::pixel_map_to_image;
+use ficture::map::{Map, MapMonad};
+use ficture::noise::SimplexNoiseGeneratorBuilder;
+use ficture::utils::normalize;
 
 mod args;
 

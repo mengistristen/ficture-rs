@@ -10,8 +10,8 @@
 //! # Examples
 //!
 //! ```
-//! use ficture_generator::cell::{Cell};
-//! use ficture_generator::map::{Map, MapMonad};
+//! use ficture::cell::{Cell};
+//! use ficture::map::{Map, MapMonad};
 //!
 //! // Create the initial map with all cells set to have
 //! // 0 elevation.
@@ -26,8 +26,9 @@
 //!     }
 //! });
 //! ```
-use rayon::prelude::*;
 use std::{ops::Deref, sync::Arc};
+
+use rayon::prelude::*;
 
 /// Contains all information about a world map.
 pub struct Map<T> {
