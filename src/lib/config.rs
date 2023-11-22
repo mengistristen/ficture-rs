@@ -1,11 +1,14 @@
 //! This module provides a structure for loading information from config files.
-use std::{fs::File, collections::HashMap};
+use std::{collections::HashMap, fs::File};
 
 use colorgrad::Color;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::{noise::{SimpleNoiseGenerator, NoiseGeneratorBuilder}, color::{ColorEvaluator, ColorFunc, get_color_func}};
+use crate::{
+    color::{get_color_func, ColorEvaluator, ColorFunc},
+    noise::{NoiseGeneratorBuilder, SimpleNoiseGenerator},
+};
 
 /// The error type returned from validation of the
 /// config file.
@@ -27,10 +30,10 @@ pub enum ConfigError {
     MissingElevationLevels,
     #[error("expected multiple moisture levels to be present, but found none")]
     MissingMoistureLevels,
-    #[error("expected multiple colors to be present, but found none")] 
+    #[error("expected multiple colors to be present, but found none")]
     MissingColors,
     #[error("failed to parse config file")]
-    FailedToParse
+    FailedToParse,
 }
 
 /// A Result type for [`ConfigError`].
@@ -46,8 +49,8 @@ pub struct Config {
     /// A mapping of strings to a set of noise generation
     /// parameters.
     pub noise_generators: HashMap<String, Noise>,
-    /// A mapping of strings to a set of biomes. 
-    pub biome_maps: HashMap<String, Biomes>
+    /// A mapping of strings to a set of biomes.
+    pub biome_maps: HashMap<String, Biomes>,
 }
 
 /// The config structure for a single biome gradient.
@@ -61,29 +64,29 @@ pub struct SimpleBiome {
 pub struct Noise {
     pub octaves: usize,
     pub persistence: f64,
-    pub lacunarity: f64
+    pub lacunarity: f64,
 }
 
 /// The config structure for a set of biome gradients.
-/// These are sets of elevation levels which contain 
+/// These are sets of elevation levels which contain
 /// moisture levels and a gradient.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Biomes {
-    pub elevation_levels: Vec<ElevationLevel>
+    pub elevation_levels: Vec<ElevationLevel>,
 }
 
 ///  The config structure for a single elevation level.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ElevationLevel {
     pub elevation: f64,
-    pub moisture_levels: Vec<MoistureLevel>
+    pub moisture_levels: Vec<MoistureLevel>,
 }
 
 /// The config structure for a single moisture level.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MoistureLevel {
     pub moisture: f64,
-    pub gradient: Vec<String>
+    pub gradient: Vec<String>,
 }
 
 impl Config {
@@ -108,30 +111,30 @@ impl Config {
     pub fn from_file(filename: impl AsRef<str>) -> ConfigResult<Self> {
         let file = File::open(filename.as_ref())
             .map_err(|_| ConfigError::InvalidFilePath(String::from(filename.as_ref())))?;
-        let config: Self = serde_yaml::from_reader(file)
-            .map_err(|_| ConfigError::FailedToParse)?;
+        let config: Self = serde_yaml::from_reader(file).map_err(|_| ConfigError::FailedToParse)?;
 
         Ok(config)
     }
 
-    /// Returns the associated noise generator for a given [`Noise`]. 
+    /// Returns the associated noise generator for a given [`Noise`].
     ///
     /// Type parameters:
-    /// - B - the noise generator builder type to use to 
+    /// - B - the noise generator builder type to use to
     ///     construct the noise generator.
     pub fn get_noise_generator<B: NoiseGeneratorBuilder>(
-        &self, 
+        &self,
         name: impl AsRef<str>,
-        width: usize, 
-        height: usize) -> Option<Box<dyn SimpleNoiseGenerator + Send + Sync>> {
+        width: usize,
+        height: usize,
+    ) -> Option<Box<dyn SimpleNoiseGenerator + Send + Sync>> {
         if let Some(noise) = self.noise_generators.get(name.as_ref()) {
             Some(
                 B::new(width, height)
-                .octaves(noise.octaves)
-                .persistence(noise.persistence)
-                .lacunarity(noise.lacunarity)
-                .build()
-            ) 
+                    .octaves(noise.octaves)
+                    .persistence(noise.persistence)
+                    .lacunarity(noise.lacunarity)
+                    .build(),
+            )
         } else {
             None
         }
@@ -168,7 +171,7 @@ impl SimpleBiome {
     /// Validate the parameters for a single biome.
     fn validate(&self) -> ConfigResult<()> {
         if self.gradient.is_empty() {
-            return Err(ConfigError::MissingColors); 
+            return Err(ConfigError::MissingColors);
         }
         for color in &self.gradient {
             Color::from_html(color).map_err(|_| ConfigError::InvalidColor(color.to_string()))?;
@@ -188,7 +191,6 @@ impl Noise {
         }
         Ok(())
     }
-
 }
 
 impl Biomes {
@@ -201,12 +203,14 @@ impl Biomes {
                 elevation_level.validate()?;
             }
         }
-        Ok(()) 
+        Ok(())
     }
 
-    /// Gets the total elevation in the biome mapping. 
+    /// Gets the total elevation in the biome mapping.
     pub(crate) fn total_elevation(&self) -> f64 {
-        self.elevation_levels.iter().fold(0.0, |acc, level| acc + level.elevation)
+        self.elevation_levels
+            .iter()
+            .fold(0.0, |acc, level| acc + level.elevation)
     }
 }
 
@@ -218,7 +222,7 @@ impl ElevationLevel {
         }
         if self.moisture_levels.is_empty() {
             return Err(ConfigError::MissingMoistureLevels);
-        } 
+        }
         for moisture_level in &self.moisture_levels {
             moisture_level.validate()?;
         }
@@ -227,7 +231,9 @@ impl ElevationLevel {
 
     /// Gets the total moisture in the elevation level.
     pub(crate) fn total_moisture(&self) -> f64 {
-        self.moisture_levels.iter().fold(0.0, |acc, level| acc + level.moisture)
+        self.moisture_levels
+            .iter()
+            .fold(0.0, |acc, level| acc + level.moisture)
     }
 }
 
@@ -238,11 +244,11 @@ impl MoistureLevel {
             return Err(ConfigError::InvalidMoisture(self.moisture));
         }
         if self.gradient.is_empty() {
-            return Err(ConfigError::MissingColors); 
+            return Err(ConfigError::MissingColors);
         }
         for color in &self.gradient {
             Color::from_html(color).map_err(|_| ConfigError::InvalidColor(color.to_string()))?;
         }
         Ok(())
-    }   
+    }
 }

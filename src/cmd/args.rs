@@ -16,5 +16,5 @@ pub struct Args {
 
     /// The path to the config file to use.
     #[arg(long, short, default_value_t = String::from("config/config.yaml"))]
-    pub filepath: String
+    pub filepath: String,
 }

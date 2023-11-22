@@ -1,4 +1,4 @@
-//! This module provides noise generators for generating 
+//! This module provides noise generators for generating
 //! world maps.
 //!
 //! This module provides the following generators:
@@ -24,7 +24,7 @@
 //!     }
 //! });
 //! ```
-use noise::{Simplex, NoiseFn};
+use noise::{NoiseFn, Simplex};
 
 /// A trait describing a generator that generates a single point
 /// in a world map given only information about it's location
@@ -72,7 +72,7 @@ impl SimplexNoiseGenerator {
                 let angle = scale_x * 2.0 * std::f64::consts::PI;
                 (angle.cos() / aspect_ratio, angle.sin() / aspect_ratio)
             })
-        .collect();
+            .collect();
 
         Self {
             height,
@@ -167,14 +167,12 @@ impl NoiseGeneratorBuilder for SimplexNoiseGeneratorBuilder {
     /// Construct the [`SimplexNoiseGenerator`] based on
     /// the defined attributes.
     fn build(self) -> Box<dyn SimpleNoiseGenerator + Send + Sync> {
-        Box::new(
-            SimplexNoiseGenerator::new(
-                self.width,
-                self.height,
-                self.octaves,
-                self.persistence,
-                self.lacunarity,
-            )
-        )
+        Box::new(SimplexNoiseGenerator::new(
+            self.width,
+            self.height,
+            self.octaves,
+            self.persistence,
+            self.lacunarity,
+        ))
     }
 }

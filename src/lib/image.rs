@@ -1,7 +1,7 @@
 //! This module contains helper functions for converting
 //! [`Map`](crate::map::Map)s into images.
 //!
-//! This module provides the following helper functions: 
+//! This module provides the following helper functions:
 //! - [`pixel_map_to_image`]
 //!
 //! # Examples
@@ -37,13 +37,23 @@ pub fn pixel_map_to_image(pixels: Vec<Rgb<u8>>, width: usize, height: usize) -> 
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{map::{Map, MapMonad}, cell::Cell};
+    use crate::{
+        cell::Cell,
+        map::{Map, MapMonad},
+    };
 
     #[test]
     fn test_image_matches_map_dimensions() {
         let width = 1920;
         let height = 1080;
-        let map = Map::return_single(Cell { elevation: 0.0, moisture: 0.0 }, width, height);
+        let map = Map::return_single(
+            Cell {
+                elevation: 0.0,
+                moisture: 0.0,
+            },
+            width,
+            height,
+        );
         let map = map.and_then(|_| Rgb([0, 0, 0]));
         let image = map.extract(pixel_map_to_image);
 

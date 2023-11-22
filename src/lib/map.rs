@@ -114,7 +114,7 @@ where
         F: Fn(T) -> U + Send + Sync,
         U: Send,
     {
-        let new_inner: Vec<U> = self.inner.into_par_iter().map(|cell| f(cell)).collect();
+        let new_inner: Vec<U> = self.inner.into_par_iter().map(f).collect();
 
         Map {
             width: self.width,
@@ -197,7 +197,10 @@ mod test {
 
     #[test]
     fn test_return_single_fills_map() {
-        let example_cell = Cell { elevation: 0.51, moisture: 0.0 };
+        let example_cell = Cell {
+            elevation: 0.51,
+            moisture: 0.0,
+        };
         let map = Map::return_single(example_cell.clone(), 10, 10);
         let mut size = 0;
 
@@ -211,7 +214,14 @@ mod test {
 
     #[test]
     fn test_and_then_maps_cells() {
-        let map = Map::return_single(Cell { elevation: 0.0, moisture: 0.0 }, 10, 10);
+        let map = Map::return_single(
+            Cell {
+                elevation: 0.0,
+                moisture: 0.0,
+            },
+            10,
+            10,
+        );
         let map = map.and_then(|cell| cell.elevation);
 
         for elevation in map.iter() {
@@ -221,7 +231,14 @@ mod test {
 
     #[test]
     fn test_and_then_with_coordinates_maps_cells() {
-        let map = Map::return_single(Cell { elevation: 0.0, moisture: 0.0 }, 10, 10);
+        let map = Map::return_single(
+            Cell {
+                elevation: 0.0,
+                moisture: 0.0,
+            },
+            10,
+            10,
+        );
         let map = map.and_then_with_coordinates(|_, x, y| x * y);
         let mut map_iter = map.iter();
 
@@ -236,7 +253,14 @@ mod test {
 
     #[test]
     fn test_extract() {
-        let map = Map::return_single(Cell { elevation: 0.0, moisture: 0.0 }, 10, 10);
+        let map = Map::return_single(
+            Cell {
+                elevation: 0.0,
+                moisture: 0.0,
+            },
+            10,
+            10,
+        );
         let map = map.and_then_with_coordinates(|_, x, y| y * 10 + x);
 
         map.extract(|values, width, height| {

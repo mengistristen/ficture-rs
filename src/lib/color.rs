@@ -10,11 +10,11 @@ use thiserror::Error;
 
 use crate::{config::Biomes, utils::normalize};
 
-/// The error type for color errors. 
+/// The error type for color errors.
 #[derive(Error, Debug)]
 pub enum ColorError {
     #[error("invalid gradient, could not parse or build gradient")]
-    InvalidGradient
+    InvalidGradient,
 }
 
 /// A result type for [`ColorError`].
@@ -57,27 +57,27 @@ struct ElevationRange {
     /// The value of the primary factor for the evaluator.
     elevation: f64,
     /// The moisture gradients associated with this range.
-    moisture_gradients: Vec<MoistureGradient> 
+    moisture_gradients: Vec<MoistureGradient>,
 }
 
-/// A structure containing information for a single 
+/// A structure containing information for a single
 /// moisture range, or the y axis of a biome map.
 struct MoistureGradient {
     /// The value of the secondary factor for the evaluator.
     moisture: f64,
     /// A function pointer for getting the color in this gradient.
-    get_color: ColorFunc 
+    get_color: ColorFunc,
 }
 
-/// A structure for evaluating colors from biome maps. The primary 
+/// A structure for evaluating colors from biome maps. The primary
 /// example of this structure's usage is in getting colors based on
 /// a cell's elevation and moisture levels. Despite using the terms
-/// "elevation" and "moisture", this can be used with any two 
+/// "elevation" and "moisture", this can be used with any two
 /// factors to get a color.
 pub struct ColorEvaluator {
     /// The ranges for the "elevation" factor of the
     /// color evaluator.
-    elevation_ranges: Vec<ElevationRange>
+    elevation_ranges: Vec<ElevationRange>,
 }
 
 impl ColorEvaluator {
@@ -95,28 +95,24 @@ impl ColorEvaluator {
 
             for moisture_level in &elevation_level.moisture_levels {
                 cumulative_moisture += moisture_level.moisture;
-                moisture_gradients.push(MoistureGradient { 
-                    moisture: cumulative_moisture / total_moisture, 
-                    get_color: get_color_func(&moisture_level.gradient)? 
+                moisture_gradients.push(MoistureGradient {
+                    moisture: cumulative_moisture / total_moisture,
+                    get_color: get_color_func(&moisture_level.gradient)?,
                 });
             }
 
             cumulative_elevation += elevation_level.elevation;
-            elevation_ranges.push(ElevationRange { 
-                elevation: cumulative_elevation / total_elevation, 
-                moisture_gradients 
+            elevation_ranges.push(ElevationRange {
+                elevation: cumulative_elevation / total_elevation,
+                moisture_gradients,
             });
         }
 
-        Ok(
-            Self {
-                elevation_ranges
-            }
-        )
+        Ok(Self { elevation_ranges })
     }
 
     /// Gets a color from a biome map based on two factors. These
-    /// are called "elevation" and "moisture" for simplicity. In 
+    /// are called "elevation" and "moisture" for simplicity. In
     /// reality, these arguments can be used to describe many other
     /// factor of map generation. For example, elevation and moisture
     /// may instead represent temperature and moisture instead in
@@ -129,10 +125,15 @@ impl ColorEvaluator {
             if elevation <= elevation_range.elevation {
                 for moisture_gradient in &elevation_range.moisture_gradients {
                     if moisture <= moisture_gradient.moisture {
-                        let normalized_elevation = normalize(elevation, 
-                            cumulative_elevation, 
-                            cumulative_elevation + elevation_range.elevation);
-                        let get_color = &moisture_gradient.get_color.lock().expect("failed to acquire lock");
+                        let normalized_elevation = normalize(
+                            elevation,
+                            cumulative_elevation,
+                            cumulative_elevation + elevation_range.elevation,
+                        );
+                        let get_color = &moisture_gradient
+                            .get_color
+                            .lock()
+                            .expect("failed to acquire lock");
 
                         final_color = get_color(normalized_elevation);
                         break;
@@ -144,5 +145,5 @@ impl ColorEvaluator {
         }
 
         final_color
-    } 
+    }
 }

@@ -7,23 +7,33 @@ use ficture::utils::normalize;
 
 mod args;
 
-use args::{Args, Parser};
 use anyhow::Context;
+use args::{Args, Parser};
 
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
     let config = Config::from_file(args.filepath).context("config file path not provided")?;
 
     let elevation_noise_generator = config
-        .get_noise_generator::<SimplexNoiseGeneratorBuilder>("elevation_noise", args.width, args.height)
+        .get_noise_generator::<SimplexNoiseGeneratorBuilder>(
+            "elevation_noise",
+            args.width,
+            args.height,
+        )
         .context("noise generator for elevation_noise not defined in config file")?;
     let moisture_noise_generator = config
-        .get_noise_generator::<SimplexNoiseGeneratorBuilder>("moisture_noise", args.width, args.height)
+        .get_noise_generator::<SimplexNoiseGeneratorBuilder>(
+            "moisture_noise",
+            args.width,
+            args.height,
+        )
         .context("noise generator for moisture_noise not defined in config file")?;
     let evaluator = config
         .get_color_evaluator("default")
         .context("default color evaluator not defined in config file")?;
-    let ocean = config.get_color_func("ocean").context("ocean gradient not defined in config file")?;
+    let ocean = config
+        .get_color_func("ocean")
+        .context("ocean gradient not defined in config file")?;
     let sea_level = 0.05;
 
     let map: Map<Cell> = Map::return_single(
@@ -49,7 +59,7 @@ fn main() -> anyhow::Result<()> {
                 min_elevation.min(cell.elevation),
                 max_elevation.max(cell.elevation),
                 min_moisture.min(cell.moisture),
-                max_moisture.max(cell.moisture)
+                max_moisture.max(cell.moisture),
             )
         },
     );
@@ -61,7 +71,7 @@ fn main() -> anyhow::Result<()> {
 
         Cell {
             elevation,
-            moisture
+            moisture,
         }
     });
 
