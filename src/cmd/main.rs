@@ -8,21 +8,22 @@ use ficture::utils::normalize;
 mod args;
 
 use args::{Args, Parser};
+use anyhow::Context;
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     let args = Args::parse();
-    let config = Config::from_file(args.filepath).expect("config filename to be provided");
+    let config = Config::from_file(args.filepath).context("config file path not provided")?;
 
     let elevation_noise_generator = config
         .get_noise_generator::<SimplexNoiseGeneratorBuilder>("elevation_noise", args.width, args.height)
-        .expect("elevation noise to be defined");
+        .context("noise generator for elevation_noise not defined in config file")?;
     let moisture_noise_generator = config
         .get_noise_generator::<SimplexNoiseGeneratorBuilder>("moisture_noise", args.width, args.height)
-        .expect("moisture noise to be defined");
+        .context("noise generator for moisture_noise not defined in config file")?;
     let evaluator = config
         .get_color_evaluator("default")
-        .expect("default biomes to be define");
-    let ocean = config.get_color_func("ocean").expect("ocean to be defined");
+        .context("default color evaluator not defined in config file")?;
+    let ocean = config.get_color_func("ocean").context("ocean gradient not defined in config file")?;
     let sea_level = 0.05;
 
     let map: Map<Cell> = Map::return_single(
@@ -70,12 +71,14 @@ fn main() {
         if elevation < sea_level {
             let normalized_elevation = normalize(elevation, 0.0, sea_level);
 
-            ocean.lock().expect("to acquire the lock")(normalized_elevation)
+            ocean.lock().expect("failed to acquire lock")(normalized_elevation)
         } else {
             evaluator.evaluate(elevation, moisture)
         }
     });
     let image = map.extract(pixel_map_to_image);
 
-    image.save("image.png").expect("image to save");
+    image.save("image.png").expect("failed to save image");
+
+    Ok(())
 }

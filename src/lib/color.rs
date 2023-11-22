@@ -46,7 +46,7 @@ pub(crate) fn get_color_func(gradient: &Vec<String>) -> ColorResult<ColorFunc> {
     let gradient = CustomGradient::new()
         .colors(&colors)
         .build()
-        .expect("gradient to build");
+        .expect("failed to build gradient");
 
     Ok(Arc::new(Mutex::new(move |x| gradient_to_rgb(&gradient, x))))
 }
@@ -132,7 +132,7 @@ impl ColorEvaluator {
                         let normalized_elevation = normalize(elevation, 
                             cumulative_elevation, 
                             cumulative_elevation + elevation_range.elevation);
-                        let get_color = &moisture_gradient.get_color.lock().expect("to acquire the lock");
+                        let get_color = &moisture_gradient.get_color.lock().expect("failed to acquire lock");
 
                         final_color = get_color(normalized_elevation);
                         break;

@@ -12,6 +12,7 @@ path = "src/cmd/main.rs"
 name = "ficture-generator"
 
 [dependencies]
+anyhow = "1.0.75"
 clap = { version = "4.2.7", features = ["derive"] }
 colorgrad = "0.6.2"
 image = "0.24.6"
